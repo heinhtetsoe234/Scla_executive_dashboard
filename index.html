@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>StarCity Living App – Executive dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F2F5F8; --surface:#FFFFFF; --ink:#10263A; --muted:#5B7083; --line:#DCE4EA; --soft:#EAF0F5;
+  --navy:#1B3B57; --blue:#1F5FBF; --teal:#0F9D9A; --slate:#A9B8C5; --grey:#8497A8; --up:#0C7F63; --down:#B8453A;
+  --shadow:0 1px 2px rgba(16,38,58,.05),0 6px 20px -12px rgba(16,38,58,.18);
+  color-scheme:light;
+  --sans:"Schibsted Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B1620; --surface:#122230; --ink:#E7EEF4; --muted:#93A8B9; --line:#223647; --soft:#192E3F;
+    --navy:#A9C4DE; --blue:#6EA0F5; --teal:#3CC6C3; --slate:#4F667C; --grey:#7F97AD; --up:#4ADBB0; --down:#F08A7E;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.5); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B1620; --surface:#122230; --ink:#E7EEF4; --muted:#93A8B9; --line:#223647; --soft:#192E3F;
+  --navy:#A9C4DE; --blue:#6EA0F5; --teal:#3CC6C3; --slate:#4F667C; --grey:#7F97AD; --up:#4ADBB0; --down:#F08A7E;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.5); color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none!important}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:6px}
+
+/* Top bar */
+.top{background:var(--surface);border-bottom:1px solid var(--line);padding:16px clamp(16px,3vw,40px);display:flex;flex-wrap:wrap;gap:16px 32px;align-items:flex-end;justify-content:space-between}
+@media (min-width:900px){.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20}}
+.brand{display:flex;align-items:center;gap:14px;min-width:0}
+.brand .logo{flex:none;height:44px;width:123px}
+.brand .logo+div{border-left:1px solid var(--line);padding-left:14px}
+.brand h1{margin:0;font-size:20px;font-weight:700;letter-spacing:-.01em}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.controls{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:var(--muted);font-weight:500}
+.select-wrap{position:relative;display:block}
+.select-wrap::after{content:"";position:absolute;right:14px;top:50%;width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:translateY(-70%) rotate(45deg);pointer-events:none}
+select{appearance:none;-webkit-appearance:none;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 38px 9px 12px;min-width:170px;cursor:pointer;font-weight:500;color:var(--ink)}
+.field.primary select{border:2px solid var(--blue);font-size:17px;font-weight:600;padding:10px 42px 10px 14px;min-width:230px;background:var(--soft)}
+.field.primary .select-wrap::after{border-color:var(--blue)}
+.field.primary>span:first-child{color:var(--blue);font-weight:600}
+.latest{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:99px;background:var(--teal);color:#fff;font-size:11px;font-weight:600;vertical-align:1px}
+.actions{display:flex;gap:8px;align-items:center}
+.btn{background:transparent;border:1px solid var(--line);border-radius:10px;padding:9px 14px;cursor:pointer;font-weight:500}
+.btn:hover{background:var(--soft)}
+.btn.link{border-color:transparent;color:var(--muted);text-decoration:underline;padding-inline:6px}
+
+/* Layout */
+main{max-width:1320px;margin:0 auto;padding:28px clamp(16px,3vw,40px) 40px}
+.sec-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:8px 24px;margin:0 0 14px}
+.sec-head h2{margin:0;font-size:19px;font-weight:700;letter-spacing:-.01em}
+.sec-head p{margin:0;color:var(--muted);font-size:13px}
+section+section{margin-top:36px}
+
+/* KPI cards */
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px 22px 16px;box-shadow:var(--shadow);display:grid;grid-template-columns:1fr auto;grid-template-areas:"label label" "val spark" "delta delta" "sub sub";gap:2px 12px;min-width:0}
+.kpi .label{grid-area:label;display:flex;align-items:center;gap:9px;margin:0;font-size:14px;font-weight:600;color:var(--muted)}
+.kpi .label i{width:10px;height:10px;border-radius:3px;background:var(--accent);flex:none}
+.kpi .val{grid-area:val;font-family:var(--serif);font-weight:500;font-size:clamp(40px,4.6vw,56px);line-height:1.05;letter-spacing:-.02em;font-variant-numeric:lining-nums tabular-nums;color:var(--ink);margin:8px 0 4px}
+.kpi .spark{grid-area:spark;align-self:end;width:112px;height:40px;margin-bottom:8px;overflow:visible}
+.kpi .delta{grid-area:delta;font-size:13px;font-weight:600;color:var(--muted)}
+.kpi .delta.up{color:var(--up)} .kpi .delta.down{color:var(--down)}
+.kpi .sub{grid-area:sub;margin:6px 0 0;font-size:13px;color:var(--muted);padding-top:10px;border-top:1px solid var(--line)}
+.kpi .sub b{color:var(--ink);font-weight:600}
+
+/* Charts */
+.seg{display:inline-flex;background:var(--soft);border-radius:10px;padding:3px;gap:2px}
+.seg button{white-space:nowrap;border:0;background:transparent;padding:5px 12px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(16,38,58,.15)}
+.card.wide{grid-column:1/-1}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 20px 14px;box-shadow:var(--shadow);min-width:0;display:flex;flex-direction:column}
+.card header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px}
+.card h3{margin:0;font-size:16px;font-weight:700;letter-spacing:-.005em}
+.card .cap{margin:3px 0 0;font-size:13px;color:var(--muted);max-width:60ch}
+.card .cap b{color:var(--ink);font-weight:600}
+.plot{position:relative;height:340px}
+.chart{position:absolute;inset:0}
+.chart svg{display:block;width:100%;height:100%;overflow:visible}
+.chart text{font-family:var(--sans)}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--surface);padding:8px 10px;border-radius:8px;font-size:12.5px;line-height:1.4;max-width:240px;box-shadow:var(--shadow);z-index:2;white-space:pre-line}
+.tip b{display:block;margin-bottom:2px}
+.empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--muted);background:var(--soft);border-radius:12px;font-size:14px}
+.note{margin:8px 0 0;font-size:12px;color:var(--muted)}
+.fail{padding:14px 16px;border-radius:12px;background:var(--soft);color:var(--muted);margin-bottom:16px;font-size:14px}
+
+details.notes{margin-top:36px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 20px}
+details.notes summary{cursor:pointer;font-weight:600}
+details.notes ul{margin:10px 0 4px;padding-left:20px;color:var(--muted);font-size:13.5px}
+details.notes li{margin:5px 0;max-width:90ch}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:10px;font-size:14px;max-width:min(92vw,520px);box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+
+@media (max-width:1000px){.grid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:820px){
+  .kpis{grid-template-columns:minmax(0,1fr)}
+  .controls{width:100%} .field{flex:1 1 150px} select,.field.primary select{width:100%;min-width:0}
+  .plot{height:300px}
+}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <svg class="logo" viewBox="0 0 736 263" role="img" aria-label="StarCity logo"><path fill="#0084AD" d="M45.5,230.1c0-2.9-1.1-5.2-3.2-7.1c-2.1-1.8-4.8-3.5-8-5c-3.2-1.5-6.7-3-10.5-4.6c-3.8-1.6-7.2-3.5-10.5-5.8 s-5.9-5.2-8-8.6c-2.1-3.4-3.2-7.8-3.2-13.2c0-4.6,0.8-8.6,2.3-12c1.6-3.4,3.7-6.2,6.6-8.5c2.9-2.3,6.2-3.9,10.1-5 c3.9-1.1,8.2-1.6,13-1.6c5.5,0,10.7,0.5,15.7,1.4c4.9,0.9,8.9,2.3,12.1,4.1l-5.4,16.1c-2-1.3-5.5-2.9-9.4-3.9c-4-1-8.3-1.6-12.9-1.6 c-4.3,0-7.7,0.9-10,2.6s-3.5,4-3.5,6.9c0,2.7,1.1,5,3.2,6.8c2.1,1.8,4.8,3.5,8,5c3.2,1.6,6.7,3.1,10.5,4.8c3.8,1.6,7.2,3.6,10.5,5.9 c3.2,2.3,5.9,5.2,8,8.6c2.1,3.4,3.2,7.6,3.2,12.7c0,5.1-0.8,9.4-2.5,13.1c-1.7,3.7-4,6.7-7.1,9.2c-3,2.4-6.7,4.3-11,5.4 c-4.3,1.2-9,1.8-14.2,1.8c-6.8,0-12.8-0.6-18-1.9c-5.2-1.3-9-2.5-11.4-3.8L6,236c1,0.6,2.3,1.1,3.9,1.8c1.6,0.6,3.4,1.2,5.4,1.8 c2,0.5,4.1,1,6.3,1.4c2.2,0.4,4.5,0.6,6.9,0.6c5.5,0,9.8-0.9,12.7-2.8C44.1,236.8,45.5,233.9,45.5,230.1z"/> <path fill="#0084AD" d="M147.6,177.1h-27.7v85.6l-18.6-9.5v-76.2h-32l5.5-16.6h78.5L147.6,177.1z"/> <path fill="#0084AD" d="M393.5,251.8c-2.7,2.1-6.2,3.5-10.3,4.3c-4.2,0.8-8.6,1.2-13.3,1.2c-5.7,0-11.1-1-16-2.9 c-5-1.9-9.3-4.9-13.1-8.9c-3.7-4-6.7-9.1-8.8-15.3c-2.2-6.2-3.3-13.6-3.3-22.1c0-8.9,1.2-16.4,3.6-22.6c2.4-6.2,5.6-11.3,9.5-15.2 c3.9-3.9,8.4-6.8,13.3-8.6c4.9-1.8,9.9-2.7,15-2.7c5.4,0,9.9,0.3,13.3,0.9c3.5,0.6,7,1.5,9.4,2.5l-3.3,9.9 c-4.4-2.2-10.6-3.3-18.6-3.3c-3.7,0-7.4,0.7-11,2s-6.9,3.6-9.7,6.7c-2.8,3.1-5.1,7.1-6.9,12.1c-1.7,5-2.6,11.1-2.6,18.3 c0,6.5,0.8,12.2,2.4,17.1c1.6,4.9,3.9,9,6.7,12.2c2.9,3.3,6.2,5.7,10.1,7.3c3.9,1.6,8,2.4,12.6,2.4c4.1,0,7.6-0.4,10.7-1.2 c3.1-0.8,5.6-1.9,7.7-3.1L393.5,251.8z"/> <path fill="#0084AD" d="M425.8,160.5h-11.3v95.2h11.3V160.5z"/> <path fill="#0084AD" d="M520.9,170.6h-36.7v85.1h-11.3v-85.1h-29.6v-10.1h72.2L520.9,170.6z"/> <path fill="#0084AD" d="M267.1,204h-7.9v-27.6c1-0.3,2.4-0.4,4.3-0.5c1.9-0.1,3.7-0.1,5.6-0.1c4.9,0,8.6,1.2,11.1,3.5 c2.5,2.3,3.8,5.5,3.8,9.6c0,5.4-1.5,9.3-4.6,11.7C276.4,202.9,272.3,204,267.1,204z M286.9,214c4.6-2,8.4-5,11.3-9 c3.6-4.9,5.4-11.2,5.4-19c0-5.2-1-9.6-3.1-13.1c-2-3.5-4.8-6.2-8.1-8.2c-3.4-2-7.3-3.4-11.6-4.2c-4.3-0.8-8.7-1.2-13.1-1.2 c-1.9,0-4,0.1-6.2,0.1c-2.3,0.1-4.6,0.2-7,0.4c-2.4,0.2-4.8,0.4-7.2,0.7c-2.4,0.3-4.6,0.7-6.7,1v101.3l18.6-9.4v-33.1l11.1,0.2 l20.3,35.2h21.5L286.9,214z"/> <path fill="#0084AD" d="M589.2,160.5l-25.8,44.2v0.1v-0.1l-25.8-44.2h-13.1l33.4,57.4v37.8h11v-37.8l33.4-57.4H589.2z"/> <path fill="#0084AD" d="M173.6,220.2l10.8-36.1l10.9,36.1H173.6z M206.1,255.7l22.6,7l-33.7-102.2h-20.9l-34.2,102.2l23.3-7l5.5-18.3 h32L206.1,255.7z"/> <path fill="#0084AD" d="M626.5,45.4L655,75.7l29.2-37.5L655.4,0L626.5,45.4z"/> <path fill="#72B1C8" d="M599.7,93.1l40.5-9.5l-17.9-44.1L575.7,44L599.7,93.1z"/> <path fill="#0084AD" d="M627.7,140.2l12-39.8l-45.3-6.6l-22.2,40.5L627.7,140.2z"/> <path fill="#72B1C8" d="M682.4,139.5l-27-30.3l-30.7,37.5l30.4,38.1L682.4,139.5z"/> <path fill="#0084AD" d="M709.2,91.8l-40.5,9.5l17.9,44.1l46.6-4.5L709.2,91.8z"/> <path fill="#72B1C8" d="M681.1,44.5l-11.8,40l47.1,6.6l19.4-42.6L681.1,44.5z"/></svg>
+    <div><h1>StarCity Living App</h1><p>Executive dashboard</p></div>
+  </div>
+  <div class="controls">
+    <label class="field primary"><span>Reporting month <span class="latest" id="latestChip" hidden>Latest</span></span>
+      <span class="select-wrap"><select id="month"></select></span></label>
+    <label class="field"><span>Compare KPIs with</span>
+      <span class="select-wrap"><select id="compare"></select></span></label>
+    <div class="actions">
+      <button class="btn" id="loadBtn" type="button">Update data</button>
+      <button class="btn link" id="resetBtn" type="button" hidden>Use built-in data</button>
+      <input type="file" id="file" accept=".xlsx,.xls" hidden>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <section aria-labelledby="h-exec">
+    <div class="sec-head"><h2 id="h-exec">Executive summary</h2><p id="asof"></p></div>
+    <div class="kpis" id="kpis"></div>
+  </section>
+
+  <section aria-labelledby="h-ops">
+    <div class="sec-head">
+      <div><h2 id="h-ops">Operations and finance</h2><p id="rangeNote"></p></div>
+      <div class="seg" role="group" aria-label="Trend range" id="rangeSeg">
+        <button type="button" data-win="6" aria-pressed="false">6 months</button>
+        <button type="button" data-win="12" aria-pressed="true">12 months</button>
+        <button type="button" data-win="0" aria-pressed="false">All</button>
+      </div>
+    </div>
+    <div class="grid">
+      <article class="card">
+        <header>
+          <div><h3>Monthly paid bill apartments</h3><p class="cap" id="cap1"></p></div>
+          <div class="seg" role="group" aria-label="Monthly paid bill apartments view" data-chart="1"><button type="button" data-view="trend" aria-pressed="true">Monthly</button><button type="button" data-view="zone" aria-pressed="false">By zone</button></div>
+        </header>
+        <div class="plot"><div class="chart" id="c1" role="img" aria-label="Monthly paid bill apartments"></div><div class="empty" id="e1" hidden></div></div>
+        <p class="note" id="n1"></p>
+      </article>
+      <article class="card">
+        <header>
+          <div><h3>Unpaid bill apartments</h3><p class="cap" id="cap2"></p></div>
+          <div class="seg" role="group" aria-label="Unpaid bill apartments view" data-chart="2"><button type="button" data-view="trend" aria-pressed="true">Monthly</button><button type="button" data-view="zone" aria-pressed="false">By zone</button></div>
+        </header>
+        <div class="plot"><div class="chart" id="c2" role="img" aria-label="Unpaid bill apartments"></div><div class="empty" id="e2" hidden></div></div>
+        <p class="note" id="n2"></p>
+      </article>
+      <article class="card">
+        <header>
+          <div><h3>Registered apartments</h3><p class="cap" id="cap3"></p></div>
+          <div class="seg" role="group" aria-label="Registered apartments view" data-chart="3"><button type="button" data-view="zone" aria-pressed="true">By zone</button><button type="button" data-view="trend" aria-pressed="false">Monthly</button></div>
+        </header>
+        <div class="plot"><div class="chart" id="c3" role="img" aria-label="Registered apartments"></div><div class="empty" id="e3" hidden></div></div>
+        <p class="note" id="n3"></p>
+      </article>
+      <article class="card">
+        <header>
+          <div><h3>Unregistered apartments</h3><p class="cap" id="cap4"></p></div>
+          <div class="seg" role="group" aria-label="Unregistered apartments view" data-chart="4"><button type="button" data-view="zone" aria-pressed="true">By zone</button><button type="button" data-view="trend" aria-pressed="false">Monthly</button></div>
+        </header>
+        <div class="plot"><div class="chart" id="c4" role="img" aria-label="Unregistered apartments"></div><div class="empty" id="e4" hidden></div></div>
+        <p class="note" id="n4"></p>
+      </article>
+      <article class="card">
+        <header><div><h3>Monthly support cases</h3><p class="cap" id="cap5"></p></div></header>
+        <div class="plot"><div class="chart" id="c5" role="img" aria-label="Monthly support cases"></div></div>
+      </article>
+      <article class="card">
+        <header><div><h3>Monthly active users (MAU)</h3><p class="cap" id="cap8"></p></div></header>
+        <div class="plot"><div class="chart" id="c8" role="img" aria-label="Monthly active users"></div></div>
+      </article>
+      <article class="card">
+        <header><div><h3>Cumulative residents</h3><p class="cap" id="cap6"></p></div></header>
+        <div class="plot"><div class="chart" id="c6" role="img" aria-label="Cumulative residents"></div></div>
+      </article>
+      <article class="card">
+        <header><div><h3>Cumulative app users</h3><p class="cap" id="cap7"></p></div></header>
+        <div class="plot"><div class="chart" id="c7" role="img" aria-label="Cumulative app users"></div></div>
+      </article>
+    </div>
+  </section>
+
+  <details class="notes">
+    <summary>Definitions and data notes</summary>
+    <ul>
+      <li><b>Apartments downloaded</b> (shown as registered) is the cumulative count of unique apartments on the app. <b>Apartments paying</b> counts unique apartments that paid a bill through the app during the month. Unpaid and unregistered are the remainder of total apartments.</li>
+      <li>Cumulative residents and app users add up the monthly new users from the first month in the data. They use the September 2026 data report, which restates a few earlier months slightly.</li>
+      <li>October 2025 to March 2026: total apartments and zone detail were not in the source files, so unpaid and unregistered counts start in April 2026.</li>
+      <li>June 2026: zone figures come from the Data_Detail tab. The Property Detail tab in that file repeats July's flags, and the unregistered table there does not reconcile to total apartments.</li>
+      <li>May 2026: the management report shows 3,197 downloaded apartments; the summary tab in the data report shows 3,199. The dashboard uses 3,197, which matches the property-level list.</li>
+      <li>To add a month, append a row to the Monthly sheet (and zone rows to the Zones sheet) in SCLA_Dashboard_Data.xlsx, then choose Update data. The newest month becomes the default.</li>
+    </ul>
+  </details>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const EMBEDDED = {"monthly":{"2022-11":{"users":72},"2022-12":{"users":4},"2023-01":{"users":10},"2023-02":{"users":4},"2023-03":{"users":17},"2023-04":{"users":8},"2023-05":{"users":1},"2024-04":{"cases":12,"residents":3,"users":20},"2024-05":{"paying":3,"transactions":3,"cases":15,"residents":8,"users":16,"mau":73},"2024-06":{"paying":1,"transactions":2,"cases":5,"residents":1,"users":4,"mau":74},"2024-07":{"paying":2,"transactions":2,"cases":2,"users":9,"mau":52},"2024-08":{"paying":50,"transactions":51,"cases":16,"residents":187,"users":328,"mau":528},"2024-09":{"paying":11,"transactions":13,"cases":3,"residents":103,"users":185,"mau":602},"2024-10":{"paying":43,"transactions":75,"cases":11,"residents":61,"users":88,"mau":526},"2024-11":{"paying":48,"transactions":64,"cases":9,"residents":43,"users":72,"mau":380},"2024-12":{"paying":109,"transactions":152,"cases":7,"residents":58,"users":79,"mau":546},"2025-01":{"paying":72,"transactions":87,"cases":8,"residents":50,"users":83,"mau":623},"2025-02":{"paying":123,"transactions":146,"cases":5,"residents":150,"users":209,"mau":731},"2025-03":{"paying":276,"transactions":357,"cases":4,"residents":253,"users":268,"mau":974},"2025-04":{"paying":281,"transactions":371,"cases":5,"residents":59,"users":97,"mau":993},"2025-05":{"paying":340,"transactions":456,"cases":2,"residents":229,"users":148,"mau":1128},"2025-06":{"paying":338,"transactions":417,"cases":8,"residents":121,"users":127,"mau":1250},"2025-07":{"paying":463,"transactions":580,"cases":9,"residents":116,"users":163,"mau":8107},"2025-08":{"paying":652,"transactions":800,"cases":14,"residents":831,"users":947,"mau":5174},"2025-09":{"paying":714,"transactions":851,"cases":12,"residents":84,"users":104,"mau":1921},"2025-10":{"downloaded":2271,"paying":787,"transactions":1001,"cases":15,"residents":111,"users":139,"mau":1923},"2025-11":{"downloaded":2357,"paying":809,"transactions":1011,"cases":9,"residents":91,"users":100,"mau":1942},"2025-12":{"downloaded":2439,"paying":804,"transactions":1009,"cases":14,"residents":80,"users":91,"mau":1908},"2026-01":{"downloaded":2577,"paying":881,"transactions":1131,"cases":8,"residents":164,"users":182,"mau":2175},"2026-02":{"downloaded":2823,"paying":913,"transactions":1147,"cases":12,"residents":178,"users":207,"mau":2213},"2026-03":{"downloaded":2996,"paying":1111,"transactions":2286,"cases":14,"residents":200,"users":191,"mau":2457},"2026-04":{"total":6208,"downloaded":3110,"paying":1093,"transactions":1510,"cases":11,"residents":105,"users":109,"mau":2406},"2026-05":{"total":6208,"downloaded":3197,"paying":1169,"transactions":1468,"cases":14,"residents":132,"users":132,"mau":2571},"2026-06":{"total":6209,"downloaded":3278,"paying":1163,"transactions":1403,"cases":23,"residents":109,"users":128,"mau":2517},"2026-07":{"total":6209,"downloaded":3359,"paying":1313,"transactions":1706,"cases":25,"residents":104,"users":121,"mau":2599},"2026-08":{"total":6209,"downloaded":3402,"paying":1265,"transactions":1577,"cases":33,"residents":98,"users":105,"mau":2612},"2026-09":{"total":6211,"downloaded":3469,"paying":1323,"transactions":1613,"cases":38,"residents":101,"users":100,"mau":2601},"2026-10":{"total":6211,"downloaded":3513,"paying":1352,"transactions":1643,"cases":33,"residents":76,"users":95,"mau":2713}},"zones":{"2026-04":{"Zone A":[979,516,190],"Zone B":[1043,508,177],"City Loft":[1351,840,300],"Staff Quarter":[626,249,185],"Commercial":[229,47,22],"Contractor Compound":[26,0,0],"City Villa":[207,124,42],"Estella":[690,313,92],"Star Villa":[42,21,7],"Zone C":[381,192,53],"ARA":[634,300,25]},"2026-05":{"Zone A":[979,523,184],"Zone B":[1043,519,184],"City Loft":[1351,857,315],"Staff Quarter":[626,250,200],"Commercial":[229,47,20],"Contractor Compound":[26,0,0],"City Villa":[207,126,47],"Estella":[690,335,117],"Star Villa":[42,23,8],"Zone C":[381,194,50],"ARA":[634,323,44]},"2026-06":{"Zone A":[979,533,173],"Zone B":[1043,532,206],"City Loft":[1351,869,319],"Staff Quarter":[626,250,179],"Commercial":[230,47,16],"Contractor Compound":[26,0,0],"City Villa":[207,128,41],"Estella":[690,352,113],"Star Villa":[42,23,8],"Zone C":[381,205,47],"ARA":[634,339,61]},"2026-07":{"Zone A":[979,539,190],"Zone B":[1043,544,218],"City Loft":[1351,886,348],"Staff Quarter":[626,250,194],"Commercial":[230,48,14],"Contractor Compound":[26,0,0],"City Villa":[207,129,54],"Estella":[690,370,144],"Star Villa":[42,23,9],"Zone C":[381,213,57],"ARA":[634,357,85]},"2026-08":{"Zone A":[979,547,177],"Zone B":[1043,552,190],"City Loft":[1351,892,348],"Staff Quarter":[626,250,183],"Commercial":[230,48,21],"Contractor Compound":[26,0,0],"City Villa":[207,131,48],"Estella":[690,381,136],"Star Villa":[42,23,9],"Zone C":[381,215,65],"ARA":[634,363,88]},"2026-09":{"Zone A":[979,559,198],"Zone B":[1043,558,215],"City Loft":[1351,907,366],"Staff Quarter":[626,251,177],"Commercial":[232,49,12],"Contractor Compound":[26,0,0],"City Villa":[207,136,51],"Estella":[690,390,146],"Star Villa":[42,23,11],"Zone C":[381,221,67],"ARA":[634,375,80]},"2026-10":{"Zone A":[979,570,205],"Zone B":[1043,566,207],"City Loft":[1351,915,368],"Staff Quarter":[626,251,183],"Commercial":[232,49,13],"Contractor Compound":[26,0,0],"City Villa":[207,137,52],"Estella":[690,397,150],"Star Villa":[42,23,12],"Zone C":[381,225,74],"ARA":[634,380,88]}}};
+
+/* ====== LOGIC START ====== */
+const MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const nf=new Intl.NumberFormat('en-US');
+const fmt=v=>v==null?'–':nf.format(v);
+const pct=(a,b,d=1)=>(a==null||b==null||!b)?null:(a/b*100).toFixed(d)+'%';
+const monthIndex=k=>{const [y,m]=k.split('-').map(Number);return y*12+m-1};
+const keyFromIndex=i=>Math.floor(i/12)+'-'+String(i%12+1).padStart(2,'0');
+const longLabel=k=>{const [y,m]=k.split('-');return MN[m-1]+' '+y};
+const shortLabel=k=>{const [y,m]=k.split('-');return MN[m-1].slice(0,3)+" ’"+y.slice(2)};
+const FIELDS=['total','downloaded','paying','transactions','cases','residents','users','mau'];
+
+function derive(data){
+  const keys=Object.keys(data.monthly).sort();
+  const lo=monthIndex(keys[0]),hi=monthIndex(keys[keys.length-1]);
+  const axis=[];for(let i=lo;i<=hi;i++)axis.push(keyFromIndex(i));
+  const g=(k,f)=>{const v=(data.monthly[k]||{})[f];return (v==null||v===''||isNaN(v))?null:Number(v)};
+  const S={};FIELDS.forEach(f=>S[f]=axis.map(k=>g(k,f)));
+  let cr=0,cu=0;S.cumResidents=[];S.cumUsers=[];
+  axis.forEach((k,i)=>{cr+=S.residents[i]||0;cu+=S.users[i]||0;S.cumResidents.push(cr);S.cumUsers.push(cu)});
+  S.unpaid=axis.map((k,i)=>S.total[i]!=null&&S.paying[i]!=null?S.total[i]-S.paying[i]:null);
+  S.unreg=axis.map((k,i)=>S.total[i]!=null&&S.downloaded[i]!=null?S.total[i]-S.downloaded[i]:null);
+  const first=S.downloaded.findIndex(v=>v!=null);
+  const kpiStart=first<0?0:first;
+  return {axis,S,kpiKeys:axis.slice(kpiStart),zones:data.zones||{}};
+}
+function windowRange(D,selKey,win,arrays){
+  const end=D.axis.indexOf(selKey);
+  let start=win?Math.max(0,end-win+1):0;
+  while(start<end&&arrays.every(a=>a[start]==null))start++;
+  return [start,end];
+}
+function delta(cur,prev){
+  if(cur==null||prev==null)return null;
+  const abs=cur-prev;return {abs,pct:prev?abs/prev*100:null};
+}
+function parseMonthCell(v){
+  if(v==null||v==='')return null;
+  if(v instanceof Date){const d=new Date(v.getTime()+12*3600e3);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
+  if(typeof v==='number'){
+    const p=(typeof XLSX!=='undefined'&&XLSX.SSF)?XLSX.SSF.parse_date_code(v):null;
+    return p&&p.y>1990?p.y+'-'+String(p.m).padStart(2,'0'):null;
+  }
+  const s=String(v).trim();let m;
+  if((m=s.match(/^(\d{4})[-\/](\d{1,2})/)))return m[1]+'-'+String(+m[2]).padStart(2,'0');
+  if((m=s.match(/^([A-Za-z]{3,9})\W*(\d{2,4})$/))){
+    const i=MN.findIndex(n=>n.toLowerCase().startsWith(m[1].slice(0,3).toLowerCase()));
+    if(i<0)return null;let y=+m[2];if(y<100)y+=2000;
+    return y+'-'+String(i+1).padStart(2,'0');
+  }
+  return null;
+}
+function rowsToData(monthlyRows,zoneRows){
+  const alias={month:/^month/i,total:/total\s*apart/i,downloaded:/download|registered/i,paying:/paying/i,transactions:/transaction/i,cases:/case/i,residents:/^resident/i,users:/app\s*user/i,mau:/^mau|monthly\s*active/i};
+  const head=monthlyRows[0].map(h=>String(h==null?'':h).trim());
+  const col={};Object.keys(alias).forEach(f=>{const i=head.findIndex(h=>alias[f].test(h));if(i>=0)col[f]=i});
+  if(col.month==null)throw new Error('The Monthly sheet needs a "Month" column.');
+  const monthly={};
+  monthlyRows.slice(1).forEach(r=>{
+    const k=parseMonthCell(r[col.month]);if(!k)return;
+    const o=monthly[k]=monthly[k]||{};
+    FIELDS.forEach(f=>{if(col[f]!=null){const v=r[col[f]];if(v!==null&&v!==''&&v!==undefined&&!isNaN(v))o[f]=Number(v)}});
+  });
+  if(!Object.keys(monthly).length)throw new Error('No valid months found in the Monthly sheet.');
+  const zones={};
+  if(zoneRows&&zoneRows.length>1){
+    const zh=zoneRows[0].map(h=>String(h==null?'':h).trim().toLowerCase());
+    const zi={month:zh.findIndex(h=>h.startsWith('month')),zone:zh.findIndex(h=>h.startsWith('zone')),p:zh.findIndex(h=>h.startsWith('propert')),d:zh.findIndex(h=>h.startsWith('download')),y:zh.findIndex(h=>h.startsWith('paying'))};
+    if(Object.values(zi).every(i=>i>=0)){
+      zoneRows.slice(1).forEach(r=>{
+        const k=parseMonthCell(r[zi.month]);if(!k||!r[zi.zone])return;
+        (zones[k]=zones[k]||{})[String(r[zi.zone]).trim()]=[+r[zi.p]||0,+r[zi.d]||0,+r[zi.y]||0];
+      });
+    }
+  }
+  return {monthly,zones};
+}
+/* ====== LOGIC END ====== */
+
+/* ====== UI ====== */
+const STORE_KEY='scla-dashboard-data-v1';
+const DATA_VERSION=2;
+let DATA=EMBEDDED,usingUploaded=false;
+try{
+  const raw=localStorage.getItem(STORE_KEY);
+  if(raw){
+    const s=JSON.parse(raw);
+    const lastS=Object.keys(s.monthly).sort().pop(),lastE=Object.keys(EMBEDDED.monthly).sort().pop();
+    if(lastS>=lastE&&s.v===DATA_VERSION){DATA=s;usingUploaded=true}else{localStorage.removeItem(STORE_KEY)}
+  }
+}catch(e){}
+let D=derive(DATA);
+const state={sel:D.kpiKeys[D.kpiKeys.length-1],cmp:null,win:12,v:{1:'trend',2:'trend',3:'zone',4:'zone'}};
+const $=id=>document.getElementById(id);
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const alpha=(hex,a)=>hex.length===7?hex+Math.round(a*255).toString(16).padStart(2,'0'):hex;
+const prevKey=k=>{const i=D.kpiKeys.indexOf(k);return i>0?D.kpiKeys[i-1]:null};
+
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),4200)}
+
+/* Selectors */
+function fillMonthSelect(){
+  const ms=$('month');ms.innerHTML='';
+  [...D.kpiKeys].reverse().forEach((k,i)=>{const o=document.createElement('option');o.value=k;o.textContent=longLabel(k)+(i===0?' (latest)':'');ms.appendChild(o)});
+  ms.value=state.sel;
+}
+function fillCompare(){
+  const cs=$('compare');cs.innerHTML='';
+  const none=document.createElement('option');none.value='';none.textContent='No comparison';cs.appendChild(none);
+  [...D.kpiKeys].reverse().filter(k=>k!==state.sel).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=longLabel(k);cs.appendChild(o)});
+  cs.value=state.cmp||'';
+}
+
+/* KPI cards */
+function spark(vals,color){
+  const pts=vals.map((v,i)=>v==null?null:[i,v]).filter(Boolean);
+  if(pts.length<2)return '';
+  const W=112,H=40,min=Math.min(...pts.map(p=>p[1])),max=Math.max(...pts.map(p=>p[1])),n=vals.length-1||1;
+  const x=i=>(i/n*(W-6)+3).toFixed(1),y=v=>(max===min?H/2:H-4-(v-min)/(max-min)*(H-8)).toFixed(1);
+  const line=pts.map(p=>x(p[0])+','+y(p[1])).join(' ');const last=pts[pts.length-1];
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" aria-hidden="true"><polyline points="${line}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${x(last[0])}" cy="${y(last[1])}" r="3.5" fill="${color}"/></svg>`;
+}
+function renderKpis(){
+  const i=D.axis.indexOf(state.sel),c=state.cmp?D.axis.indexOf(state.cmp):-1,S=D.S;
+  const win=Math.max(0,i-11);
+  const defs=[
+    {f:'total',label:'Total StarCity apartments',color:'var(--navy)',sub:()=>'Properties in StarCity at month end'},
+    {f:'downloaded',label:'Apartments downloaded',color:'var(--blue)',sub:()=>{const p=pct(S.downloaded[i],S.total[i]);return p?`<b>${p}</b> of all StarCity apartments`:'Cumulative unique apartments on the app'}},
+    {f:'paying',label:'Apartments paying via app',color:'var(--teal)',sub:()=>{const a=pct(S.paying[i],S.downloaded[i]),b=pct(S.paying[i],S.total[i]);return a?`<b>${a}</b> of downloaded apartments`+(b?` · ${b} of all`:''):'Unique apartments that paid a bill this month'}}
+  ];
+  $('kpis').innerHTML=defs.map(d=>{
+    const cur=S[d.f][i];
+    const dl=c>=0?delta(cur,S[d.f][c]):null;
+    let dh='<div class="delta">'+(state.cmp?'No comparison figure for '+longLabel(state.cmp):'&nbsp;')+'</div>';
+    if(dl){
+      const cls=dl.abs>0?'up':dl.abs<0?'down':'';
+      const sign=dl.abs>0?'+':dl.abs<0?'−':'';
+      dh=`<div class="delta ${cls}">${dl.abs===0?'No change':sign+fmt(Math.abs(dl.abs))+(dl.pct==null?'':` (${sign}${Math.abs(dl.pct).toFixed(1)}%)`)} vs ${longLabel(state.cmp)}</div>`;
+    }
+    const sub=cur==null?'Not reported for this month':d.sub();
+    return `<article class="kpi" style="--accent:${d.color}"><h3 class="label"><i></i>${d.label}</h3><div class="val">${fmt(cur)}</div>${spark(S[d.f].slice(win,i+1),d.color)}${dh}<p class="sub">${sub}</p></article>`;
+  }).join('');
+  $('asof').textContent=`Status as of ${longLabel(state.sel)}`+(state.sel===D.kpiKeys[D.kpiKeys.length-1]?' · latest month in the data':'');
+}
+
+/* Charts (drawn as SVG, no external library) */
+const charts={};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function scale(max){
+  if(max<=0)return {step:1,top:4};
+  const raw=max/4,p=Math.pow(10,Math.floor(Math.log10(raw)));
+  const step=[1,2,2.5,5,10].map(f=>f*p).find(s=>s>=raw);
+  return {step,top:Math.ceil(max/step-1e-9)*step};
+}
+function paint(id){
+  const s=charts[id],host=$(id);
+  if(!s||!host)return;
+  const W=host.clientWidth,H=host.clientHeight;
+  if(!(W>=40&&H>=40))return;
+  const n=s.labels.length,col=s.color,T='style="fill:var(--muted);font-size:12px"';
+  let g='',hit='';
+  if(s.type==='hbar'){
+    const maxLab=Math.max(...s.labels.map(l=>l.length));
+    const m={l:Math.min(150,maxLab*6.6+14),r:58,t:6,b:6};
+    const iw=W-m.l-m.r,ih=H-m.t-m.b,rh=ih/n,bh=Math.min(rh*.68,24),max=Math.max(1,...s.values.map(v=>v||0));
+    s.values.forEach((v,i)=>{
+      const cy=m.t+rh*i+rh/2,w=(v||0)/max*iw;
+      g+=`<text x="${m.l-8}" y="${cy+4}" text-anchor="end" ${T}>${esc(s.labels[i])}</text>`;
+      g+=`<rect x="${m.l}" y="${cy-bh/2}" width="${Math.max(w,0)}" height="${bh}" rx="3" style="fill:${col}"/>`;
+      g+=`<text x="${m.l+w+6}" y="${cy+4}" style="fill:var(--ink);font-size:12px;font-weight:600">${fmt(v)}</text>`;
+      hit+=`<rect data-i="${i}" x="0" y="${m.t+rh*i}" width="${W}" height="${rh}" fill="transparent"/>`;
+    });
+    g+=`<line x1="${m.l}" x2="${m.l}" y1="${m.t}" y2="${H-m.b}" style="stroke:var(--line)"/>`;
+  }else{
+    const max=Math.max(0,...s.values.filter(v=>v!=null)),sc=scale(max),ticks=[];
+    for(let v=0;v<=sc.top+1e-9;v+=sc.step)ticks.push(v);
+    const m={l:Math.max(...ticks.map(v=>nf.format(v).length))*7+16,r:s.type==='line'?20:10,t:12,b:30};
+    const iw=W-m.l-m.r,ih=H-m.t-m.b,y=v=>m.t+ih-v/sc.top*ih;
+    ticks.forEach(v=>{g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y(v)}" y2="${y(v)}" style="stroke:var(--line)"/><text x="${m.l-8}" y="${y(v)+4}" text-anchor="end" ${T}>${nf.format(v)}</text>`});
+    const step=s.type==='line'?(n>1?iw/(n-1):iw):iw/n;
+    const x=s.type==='line'?(i=>n===1?m.l+iw/2:m.l+i/(n-1)*iw):(i=>m.l+step*i+step/2);
+    const every=Math.max(1,Math.ceil(56/step));
+    for(let i=0;i<n;i++){
+      if((n-1-i)%every===0)g+=`<text x="${x(i)}" y="${H-9}" text-anchor="middle" ${T}>${esc(s.labels[i])}</text>`;
+      hit+=`<rect data-i="${i}" x="${x(i)-step/2}" y="${m.t}" width="${step}" height="${ih}" fill="transparent"/>`;
+    }
+    if(s.type==='bar'){
+      const bw=Math.min(step*.7,44);
+      s.values.forEach((v,i)=>{if(v==null)return;g+=`<rect x="${x(i)-bw/2}" y="${y(v)}" width="${bw}" height="${Math.max(y(0)-y(v),0)}" rx="3" style="fill:${col}" fill-opacity="${i===s.sel?1:.5}"/>`});
+    }else{
+      const segs=[];let cur=[];
+      s.values.forEach((v,i)=>{if(v==null){if(cur.length)segs.push(cur);cur=[]}else cur.push([x(i),y(v)])});
+      if(cur.length)segs.push(cur);
+      segs.forEach(sg=>{
+        const d=sg.map((p,k)=>(k?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+        g+=`<path d="${d} L${sg[sg.length-1][0].toFixed(1)} ${y(0)} L${sg[0][0].toFixed(1)} ${y(0)} Z" style="fill:${col}" fill-opacity=".12"/>`;
+        g+=`<path d="${d}" fill="none" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" style="stroke:${col}"/>`;
+      });
+      if(n<=30)s.values.forEach((v,i)=>{if(v!=null&&i!==s.sel)g+=`<circle cx="${x(i)}" cy="${y(v)}" r="3" stroke-width="2" style="fill:var(--surface);stroke:${col}"/>`});
+      const sv=s.values[s.sel];
+      g+=`<line x1="${x(s.sel)}" x2="${x(s.sel)}" y1="${m.t}" y2="${m.t+ih}" stroke-dasharray="4 4" style="stroke:var(--muted)"/>`;
+      if(sv!=null)g+=`<circle cx="${x(s.sel)}" cy="${y(sv)}" r="6" stroke-width="2" style="fill:${col};stroke:var(--surface)"/>`;
+    }
+    g=`<line x1="${m.l}" x2="${W-m.r}" y1="${y(0)}" y2="${y(0)}" style="stroke:var(--line)"/>`+g;
+  }
+  host.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" aria-hidden="true">${g}${hit}</svg><div class="tip" hidden></div>`;
+  bindTip(host);
+}
+function bindTip(host){
+  if(host._b)return;host._b=1;
+  host.addEventListener('pointermove',e=>{
+    const tip=host.querySelector('.tip'),s=charts[host.id],i=e.target&&e.target.dataset?e.target.dataset.i:null;
+    if(!tip)return;
+    if(i==null||!s){tip.hidden=true;return}
+    tip.innerHTML=`<b>${esc(s.tipTitle(+i))}</b>${esc(s.tipBody(+i))}`;tip.hidden=false;
+    const r=host.getBoundingClientRect();let x=e.clientX-r.left+14,y=e.clientY-r.top+14;
+    if(x+tip.offsetWidth>r.width-4)x=e.clientX-r.left-tip.offsetWidth-14;
+    tip.style.left=Math.max(4,x)+'px';tip.style.top=Math.min(Math.max(4,y),Math.max(4,r.height-tip.offsetHeight-4))+'px';
+  });
+  host.addEventListener('pointerleave',()=>{const t=host.querySelector('.tip');if(t)t.hidden=true});
+}
+function draw(id,spec){charts[id]=spec;paint(id)}
+function clearChart(id){delete charts[id];const h=$(id);if(h)h.innerHTML=''}
+function setEmpty(n,msg){
+  const e=$('e'+n),c=$('c'+n);
+  e.hidden=!msg;c.style.visibility=msg?'hidden':'visible';
+  if(msg)e.textContent=msg;
+}
+function sliceKeys(a,b){return D.axis.slice(a,b+1)}
+function zoneRowsFor(key){
+  const z=D.zones[key];if(!z)return null;
+  return Object.entries(z).map(([name,[p,d,y]])=>({name,p,d,y})).sort((a,b)=>b.p-a.p);
+}
+function renderApt(cfg){
+  const S=D.S,selIdx=D.axis.indexOf(state.sel),L=longLabel(state.sel),n=cfg.n,col=cfg.col,view=state.v[n],id='c'+n;
+  $('n'+n).textContent='';
+  if(view==='trend'){
+    const [a,b]=windowRange(D,state.sel,state.win,[S[cfg.field]]);
+    const keys=sliceKeys(a,b),data=S[cfg.field].slice(a,b+1);
+    setEmpty(n,null);
+    draw(id,{type:'bar',labels:keys.map(shortLabel),values:data,color:col,sel:keys.length-1,tipTitle:i=>longLabel(keys[i]),
+      tipBody:i=>{const v=data[i],t=S.total[a+i];if(v==null)return 'No data';return `${cfg.label}: ${fmt(v)}`+(t?`\n${(v/t*100).toFixed(1)}% of ${fmt(t)} apartments`:'')}});
+    const v=S[cfg.field][selIdx],share=pct(v,S.total[selIdx]);
+    $('cap'+n).innerHTML=v==null?`Not reported for ${L}.`:`<b>${fmt(v)}</b> ${cfg.noun} apartments in ${L}`+(share?` (${share} of all apartments).`:'.');
+    if(cfg.needsTotal){const ft=S.total.findIndex(x=>x!=null);if(ft>a)$('n'+n).textContent=`Shown from ${longLabel(D.axis[ft])}, when total apartments were first reported.`}
+  }else{
+    const rows=zoneRowsFor(state.sel);
+    if(!rows){setEmpty(n,`Zone detail isn't available for ${L}. Add rows for this month to the Zones sheet and choose Update data.`);clearChart(id);$('cap'+n).textContent=`${cfg.label} by zone.`;return}
+    const f=r=>cfg.zone(r);
+    rows.sort((x,y)=>f(y)-f(x));
+    setEmpty(n,null);
+    draw(id,{type:'hbar',labels:rows.map(r=>r.name),values:rows.map(f),color:col,tipTitle:i=>rows[i].name,
+      tipBody:i=>{const r=rows[i];return `${cfg.label}: ${fmt(f(r))}`+(r.p?`\n${(f(r)/r.p*100).toFixed(1)}% of ${fmt(r.p)} apartments in zone`:'')}});
+    const top=rows[0];
+    $('cap'+n).innerHTML=`${L}: <b>${top.name}</b> has the most ${cfg.noun} apartments (${fmt(f(top))}).`;
+  }
+}
+const APT=[
+  {n:1,field:'paying',zone:r=>r.y,col:'var(--teal)',label:'Paid bill apartments',noun:'paid',needsTotal:false},
+  {n:2,field:'unpaid',zone:r=>r.p-r.y,col:'var(--grey)',label:'Unpaid bill apartments',noun:'unpaid',needsTotal:true},
+  {n:3,field:'downloaded',zone:r=>r.d,col:'var(--blue)',label:'Registered apartments',noun:'registered',needsTotal:false},
+  {n:4,field:'unreg',zone:r=>r.p-r.d,col:'var(--grey)',label:'Unregistered apartments',noun:'unregistered',needsTotal:true}
+];
+function lineSpec(arr,color,label,rangeArrays){
+  const [a,b]=windowRange(D,state.sel,state.win,rangeArrays||[arr]);
+  const keys=sliceKeys(a,b),vals=arr.slice(a,b+1);
+  return {type:'line',labels:keys.map(shortLabel),values:vals,color,sel:keys.length-1,tipTitle:i=>longLabel(keys[i]),tipBody:i=>vals[i]==null?'No data':`${label}: ${fmt(vals[i])}`};
+}
+function renderCharts(){
+  const S=D.S,selIdx=D.axis.indexOf(state.sel),L=longLabel(state.sel);
+  APT.forEach(renderApt);
+  draw('c5',lineSpec(S.cases,'var(--blue)','Support cases'));
+  draw('c8',lineSpec(S.mau,'var(--teal)','Monthly active users'));
+  const mv=S.mau[selIdx];
+  $('cap8').innerHTML=mv==null?`No MAU data for ${L}.`:`<b>${fmt(mv)}</b> monthly active users in ${L}.`;
+  const c=S.cases[selIdx];
+  $('cap5').innerHTML=c==null?`No support case data for ${L}.`:`<b>${fmt(c)}</b> cases in ${L}.`;
+  const nz=a=>a.map(v=>v?v:null);
+  draw('c6',lineSpec(S.cumResidents,'var(--navy)','Cumulative residents',[nz(S.cumResidents)]));
+  draw('c7',lineSpec(S.cumUsers,'var(--teal)','Cumulative app users',[nz(S.cumUsers)]));
+  const r=S.cumResidents[selIdx],u=S.cumUsers[selIdx];
+  $('cap6').innerHTML=`<b>${fmt(r)}</b> residents by ${L}`+(S.residents[selIdx]!=null?`, <b>+${fmt(S.residents[selIdx])}</b> in the month.`:'.');
+  $('cap7').innerHTML=`<b>${fmt(u)}</b> app users by ${L}`+(S.users[selIdx]!=null?`, <b>+${fmt(S.users[selIdx])}</b> in the month.`:'.');
+  const wl=state.win?`Trends show the ${state.win} months to ${L}.`:`Trends show all months to ${L}.`;
+  $('rangeNote').textContent=wl+' The highlighted bar or marker is the reporting month.';
+}
+if(typeof ResizeObserver!=='undefined'){const ro=new ResizeObserver(()=>Object.keys(charts).forEach(paint));document.querySelectorAll('.plot').forEach(p=>ro.observe(p))}
+addEventListener('resize',()=>Object.keys(charts).forEach(paint));
+
+function renderAll(){
+  $('latestChip').hidden=state.sel!==D.kpiKeys[D.kpiKeys.length-1];
+  renderKpis();renderCharts();
+  $('resetBtn').hidden=!usingUploaded;
+}
+
+/* Events */
+$('month').addEventListener('change',e=>{state.sel=e.target.value;if(state.cmp===state.sel)state.cmp=null;fillCompare();renderAll()});
+$('compare').addEventListener('change',e=>{state.cmp=e.target.value||null;renderAll()});
+$('rangeSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;state.win=+b.dataset.win;
+  [...$('rangeSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));renderAll();
+});
+document.querySelectorAll('.seg[data-chart]').forEach(seg=>seg.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;state.v[seg.dataset.chart]=b.dataset.view;
+  [...seg.children].forEach(x=>x.setAttribute('aria-pressed',x===b));renderCharts();
+}));
+$('loadBtn').addEventListener('click',()=>{
+  if(typeof XLSX==='undefined'){toast('The Excel reader could not be loaded. Check your connection and reload.');return}
+  $('file').click();
+});
+$('file').addEventListener('change',async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{
+    const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});
+    const find=n=>wb.SheetNames.find(s=>s.trim().toLowerCase()===n);
+    const mName=find('monthly');if(!mName)throw new Error('No sheet named "Monthly" found.');
+    const rows=n=>n?XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:null}):null;
+    const nd=rowsToData(rows(mName),rows(find('zones')));
+    DATA=nd;usingUploaded=true;
+    try{localStorage.setItem(STORE_KEY,JSON.stringify(Object.assign({v:DATA_VERSION},nd)))}catch(_){}
+    D=derive(DATA);state.sel=D.kpiKeys[D.kpiKeys.length-1];state.cmp=null;
+    fillMonthSelect();fillCompare();renderAll();
+    toast(`Loaded ${Object.keys(nd.monthly).length} months. Showing ${longLabel(state.sel)}.`);
+  }catch(err){toast('Could not read that file: '+err.message)}
+  e.target.value='';
+});
+$('resetBtn').addEventListener('click',()=>{
+  try{localStorage.removeItem(STORE_KEY)}catch(_){}
+  DATA=EMBEDDED;usingUploaded=false;D=derive(DATA);state.sel=D.kpiKeys[D.kpiKeys.length-1];state.cmp=null;
+  fillMonthSelect();fillCompare();renderAll();toast('Back to the built-in data.');
+});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>renderAll());
+new MutationObserver(()=>renderAll()).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+/* Init */
+state.cmp=null;
+fillMonthSelect();fillCompare();
+renderAll();
+</script>
+</body>
+</html>
